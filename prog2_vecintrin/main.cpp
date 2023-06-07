@@ -249,7 +249,33 @@ void clampedExpVector(float* values, int* exponents, float* output, int N) {
   // Your solution should work for any value of
   // N and VECTOR_WIDTH, not just when VECTOR_WIDTH divides N
   //
-  
+  __cs149_vec_float x;
+  __cs149_vec_int y;
+  __cs149_vec_float result;
+  __cs149_mask mask;//bool集合
+  __cs149_mask all = _cs149_init_ones();//代表使用所有值
+  __cs149_vec_int zeros=_cs149_vset_int(0);
+  __cs149_vec_int intones=_cs149_vset_int(1);//用于减1后和0比较
+  __cs149_vec_float floatones=_cs149_vset_float(1.f);
+  __cs149_vec_float nines=_cs149_vset_float(9.999999f);
+  __cs149_vec_float result;
+  int batch=(N+VECTOR_WIDTH-1)/VECTOR_WIDTH;//算batch轮,有不整除的情况
+  for(int i=0;i<batch;i++){
+    mask=_cs149_init_ones();
+    result=_cs149_vset_float(1.f);
+    if(i==batch-1 && N%VECTOR_WIDTH>0) all=_cs149_init_ones(N%VECTOR_WIDTH);//不整除,多余的单独算
+    _cs149_vload_float(x,values+i*VECTOR_WIDTH,all);//所有位载入x
+    _cs149_vload_int(y,exponents+i*VECTOR_WIDTH,all);//所有位载入y
+    _cs149_vgt_int(mask,y,zeros,all);//y>0的mask对应位为1,代表要进入while循环
+    while(_cs149_cntbits(mask)>0){//while (count > 0)
+      _cs149_vmult_float(result,result,x,mask);//根据mask中1的分布计算result *= x;
+      _cs149_vsub_int(y,y,intones,mask);//y=y-1
+      _cs149_vgt_int(mask,y,zeros,mask);//y>0?
+    }
+    _cs149_vgt_float(mask,result,nines,all);//所有值比较result>9.999999f?,第一个y==0结果不会干扰
+    _cs149_vmove_float(result,nines,mask);//赋值9.999999f
+    _cs149_vstore_float(output+i*VECTOR_WIDTH,result,all);//存到output
+  }
 }
 
 // returns the sum of all elements in values
@@ -270,11 +296,20 @@ float arraySumVector(float* values, int N) {
   //
   // CS149 STUDENTS TODO: Implement your vectorized version of arraySumSerial here
   //
-  
+  float sum=0.0;
+  float temp[VECTOR_WIDTH];
+  __cs149_mask all=_cs149_init_ones();//所有数
+  __cs149_mask mask=_cs149_init_ones(1);//取第一个数
+  __cs149_vec_float result;
   for (int i=0; i<N; i+=VECTOR_WIDTH) {
-
+    _cs149_vload_float(result,values+i,all);//所有位载入
+    for(int j=0;j*j<VECTOR_WIDTH;j++){//类似归并VECTOR_WIDTH次
+      _cs149_hadd_float(result,result);
+      _cs149_interleave_float(result,result);
+    }
+    _cs149_vstore_float(temp,result,mask);
+    sum+=temp[0];
   }
-
-  return 0.0;
+  return sum;
 }
 
