@@ -251,7 +251,6 @@ void clampedExpVector(float* values, int* exponents, float* output, int N) {
   //
   __cs149_vec_float x;
   __cs149_vec_int y;
-  __cs149_vec_float result;
   __cs149_mask mask;//bool集合
   __cs149_mask all = _cs149_init_ones();//代表使用所有值
   __cs149_vec_int zeros=_cs149_vset_int(0);
@@ -276,6 +275,7 @@ void clampedExpVector(float* values, int* exponents, float* output, int N) {
     _cs149_vmove_float(result,nines,mask);//赋值9.999999f
     _cs149_vstore_float(output+i*VECTOR_WIDTH,result,all);//存到output
   }
+  
 }
 
 // returns the sum of all elements in values
@@ -296,8 +296,9 @@ float arraySumVector(float* values, int N) {
   //
   // CS149 STUDENTS TODO: Implement your vectorized version of arraySumSerial here
   //
+  
   float sum=0.0;
-  float temp[VECTOR_WIDTH];
+  float temp;
   __cs149_mask all=_cs149_init_ones();//所有数
   __cs149_mask mask=_cs149_init_ones(1);//取第一个数
   __cs149_vec_float result;
@@ -307,9 +308,8 @@ float arraySumVector(float* values, int N) {
       _cs149_hadd_float(result,result);
       _cs149_interleave_float(result,result);
     }
-    _cs149_vstore_float(temp,result,mask);
-    sum+=temp[0];
+    _cs149_vstore_float(&temp,result,mask);
+    sum+=temp;
   }
   return sum;
 }
-

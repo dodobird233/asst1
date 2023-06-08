@@ -71,8 +71,24 @@ int main(int argc, char** argv) {
     const unsigned int width = 1600;
     const unsigned int height = 1200;
     const int maxIterations = 256;
-    int numThreads = 2;
-
+    int numThreads = 8;
+    //分块
+    //2 1.93x
+    //3 1.59x
+    //4 2.4x
+    //5 2.45x
+    //6 3.08x
+    //7 3.22x
+    //8 3.79x
+    //交叉
+    //2 1.94x
+    //3 2.83x
+    //4 3.72x
+    //5 4.55x
+    //6 5.25x
+    //7 6.10x
+    //8 6.73x
+    //16 6.06x
     float x0 = -2;
     float x1 = 1;
     float y0 = -1;

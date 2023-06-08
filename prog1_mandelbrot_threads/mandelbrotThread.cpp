@@ -34,12 +34,16 @@ void workerThreadStart(WorkerArgs * const args) {
     // to compute a part of the output image.  For example, in a
     // program that uses two threads, thread 0 could compute the top
     // half of the image and thread 1 could compute the bottom half.
-    // for(int i=args->threadId;i<args->height;i+=args->numThreads){
-    //     mandelbrotSerial(args->x0,args->y0,args->x1,args->y1,args->width,args->height,i,1,args->maxIterations,args->output);
-    // }
-    int partheight=args->height/args->numThreads;
-    mandelbrotSerial(args->x0,args->y0,args->x1,args->y1,args->width,args->height,args->threadId*partheight,partheight,args->maxIterations,args->output);
-    printf("Hello world from thread %d\n", args->threadId);
+    double startTime = CycleTimer::currentSeconds();
+    //交叉并行,调用次数多  8线程6.73x
+    for(int i=args->threadId;i<args->height;i+=args->numThreads){
+        mandelbrotSerial(args->x0,args->y0,args->x1,args->y1,args->width,args->height,i,1,args->maxIterations,args->output);
+    }
+    //分块并行，不能整除时较为繁琐   8线程3.78x
+    //int partheight=args->height/args->numThreads;
+    //mandelbrotSerial(args->x0,args->y0,args->x1,args->y1,args->width,args->height,args->threadId*partheight,partheight,args->maxIterations,args->output);
+    double endTime = CycleTimer::currentSeconds();
+    printf("Hello world from thread %d，time:%f\n", args->threadId,endTime-startTime);
 }
 
 //
@@ -97,4 +101,3 @@ void mandelbrotThread(
         workers[i].join();
     }
 }
-
